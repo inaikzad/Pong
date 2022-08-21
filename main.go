@@ -88,7 +88,7 @@ func HandleUserInput(key string) {
 		player1.row++
 	} else if key == "Up" && player2.row > 0 {
 		player2.row--
-	} else if key == "Down" && player2.row+player2.height > screenHeight {
+	} else if key == "Down" && player2.row+player2.height < screenHeight {
 		player2.row++
 	}
 }
