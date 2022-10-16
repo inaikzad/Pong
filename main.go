@@ -29,21 +29,35 @@ var debugLog string
 
 var gameObjects []*GameObject
 
+var p1Score uint
+var p2Score uint
+
 func main() {
 	InitScreen()
-	GameState()
 	inputChannel := UserInput()
 
 	for !IsGameOver() {
-		HandleUserInput(ReadInput(inputChannel))
-		UpdateState()
-		DrawState()
-		time.Sleep(50 * time.Millisecond)
+		GameState()
 
+		for !IsRoundOver() {
+			HandleUserInput(ReadInput(inputChannel))
+			UpdateState()
+			DrawState()
+			time.Sleep(50 * time.Millisecond)
+		}
+
+		screenWidth, screenHeigh := screen.Size()
+		ScoreRound()
+		PrintStringCentered(screenHeigh/2-1, screenWidth/2, "Round Over!")
+		PrintStringCentered(screenHeigh/2, screenWidth/2, fmt.Sprintf("PLAYER 1: %d points, PLAYER 2: %d points!", p1Score, p2Score))
+		screen.Show()
+		time.Sleep(3 * time.Second)
 	}
 
 	screenWidth, screenHeigh := screen.Size()
 	winner := GetWinner()
+
+	screen.Clear()
 	PrintStringCentered(screenHeigh/2-1, screenWidth/2, "Game Over!")
 	PrintStringCentered(screenHeigh/2, screenWidth/2, fmt.Sprintf("%s Wins!", winner))
 	screen.Show()
@@ -58,7 +72,7 @@ func PrintStringCentered(row, col int, str string) {
 	PrintString(row, col, str)
 }
 
-func GetWinner() string {
+func GetRoundWinner() string {
 	screenWidth, _ := screen.Size()
 	if ball.col < 0 {
 		return "Player 2"
@@ -69,8 +83,34 @@ func GetWinner() string {
 	}
 }
 
+func ScoreRound() {
+	winner := GetRoundWinner()
+	switch winner {
+	case "Player 1":
+		p1Score++
+	case "Player 2":
+		p2Score++
+	default:
+		panic("Unknown winner - can not update score")
+	}
+}
+
+func IsRoundOver() bool {
+	return GetRoundWinner() != " "
+}
+
 func IsGameOver() bool {
-	return GetWinner() != " "
+	return p1Score >= 5 || p2Score >= 5
+}
+
+func GetWinner() string {
+	if p1Score >= 5 {
+		return "Player 1"
+	} else if p2Score >= 5 {
+		return "Player 2"
+	} else {
+		panic("Unknown winner")
+	}
 }
 
 func UpdateState() {
